@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Alumnos</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f4;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      max-width: 400px;
+      margin: 40px auto;
+      border-radius: 8px;
+    }
+    input, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="formAlumno">
+    <h2>Registro de Alumno</h2>
+
+    <input type="text" id="nombreAlumno" placeholder="Nombre del alumno" required>
+    <input type="text" id="identidadAlumno" placeholder="Identidad del alumno" required>
+    <input type="number" id="edadAlumno" placeholder="Edad" required>
+
+    <input type="text" id="nombrePadre" placeholder="Nombre del padre" required>
+    <input type="text" id="identidadPadre" placeholder="Identidad del padre" required>
+    <input type="text" id="telefonoPadre" placeholder="Teléfono del padre" required>
+
+    <button type="submit">Guardar Alumno</button>
+
+    <p id="mensaje"></p>
+  </form>
+
+  <script>
+    const form = document.getElementById("formAlumno");
+    const mensaje = document.getElementById("mensaje");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const alumno = {
+        nombreAlumno: document.getElementById("nombreAlumno").value,
+        identidadAlumno: document.getElementById("identidadAlumno").value,
+        edadAlumno: parseInt(document.getElementById("edadAlumno").value),
+        nombrePadre: document.getElementById("nombrePadre").value,
+        identidadPadre: document.getElementById("identidadPadre").value,
+        telefonoPadre: document.getElementById("telefonoPadre").value
+      };
+
+      try {
+        const res = await fetch("http://localhost:3000/alumnos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(alumno)
+        });
+
+        const data = await res.json();
+        mensaje.innerText = data.mensaje || "Alumno guardado";
+        form.reset();
+
+      } catch (error) {
+        mensaje.innerText = "Error al guardar alumno";
+      }
+    });
+  </script>
+
+</body>
+</html>

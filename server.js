@@ -1,38 +1,43 @@
 const express = require("express");
-const sql = require("mssql/msnodesqlv8");
+const sql = require("mssql");
 const cors = require("cors");
 const path = require("path");
 
 const app = express();
 
-// ========== MIDDLEWARE ==========
+/* ================= MIDDLEWARE ================= */
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ========== CONFIG SQL (WINDOWS AUTH REAL) ==========
+/* ================= CONFIG SQL SERVER (RENDER) =================
+   ESTO USA VARIABLES DE ENTORNO
+*/
 const dbConfig = {
-  server: "DESKTOP-88S1VE0\\MSSQLSERVER01",
-  database: "RegistroAlumnos",
-  driver: "msnodesqlv8",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,   // ej: myserver.database.windows.net
+  database: process.env.DB_NAME,
+  port: 1433,
   options: {
-    trustedConnection: true
+    encrypt: true,
+    trustServerCertificate: true
   }
 };
 
-// ========== TEST SQL ==========
+/* ================= TEST CONEXIÓN ================= */
 app.get("/test-sql", async (req, res) => {
   try {
     await sql.connect(dbConfig);
-    res.send("✅ CONECTADO CORRECTAMENTE A SQL SERVER (Windows Auth)");
+    res.send("✅ Conectado correctamente a SQL Server (Render)");
   } catch (err) {
     console.error(err);
     res.status(500).send("❌ Error SQL: " + err.message);
   }
 });
 
-// ========== INSERTAR ALUMNO ==========
+/* ================= INSERTAR ALUMNO ================= */
 app.post("/alumnos", async (req, res) => {
   try {
     const {
@@ -47,17 +52,17 @@ app.post("/alumnos", async (req, res) => {
     const pool = await sql.connect(dbConfig);
 
     await pool.request()
-      .input("nombreAlumno", sql.VarChar, nombreAlumno)
-      .input("identidadAlumno", sql.VarChar, identidadAlumno)
-      .input("edadAlumno", sql.Int, edadAlumno)
-      .input("nombrePadre", sql.VarChar, nombrePadre)
-      .input("identidadPadre", sql.VarChar, identidadPadre)
-      .input("telefonoPadre", sql.VarChar, telefonoPadre)
+      .input("NombreAlumno", sql.VarChar, nombreAlumno)
+      .input("IdentidadAlumno", sql.VarChar, identidadAlumno)
+      .input("EdadAlumno", sql.Int, edadAlumno)
+      .input("NombrePadre", sql.VarChar, nombrePadre)
+      .input("IdentidadPadre", sql.VarChar, identidadPadre)
+      .input("TelefonoPadre", sql.VarChar, telefonoPadre)
       .query(`
         INSERT INTO Alumno
         (NombreAlumno, IdentidadAlumno, EdadAlumno, NombrePadre, IdentidadPadre, TelefonoPadre)
         VALUES
-        (@nombreAlumno, @identidadAlumno, @edadAlumno, @nombrePadre, @identidadPadre, @telefonoPadre)
+        (@NombreAlumno, @IdentidadAlumno, @EdadAlumno, @NombrePadre, @IdentidadPadre, @TelefonoPadre)
       `);
 
     res.json({ mensaje: "Alumno registrado correctamente" });
@@ -68,9 +73,9 @@ app.post("/alumnos", async (req, res) => {
   }
 });
 
-// ========== SERVER ==========
+/* ================= SERVER ================= */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
